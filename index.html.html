@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 400px;
+            margin: auto;
+        }
+        input, select, button {
+            margin: 10px 0;
+            width: 100%;
+            padding: 8px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Timesheet Form</h2>
+    <form id="timesheetForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="client">Client Name:</label>
+        <input type="text" id="client" name="client" required>
+
+        <label for="hours">Hours Worked:</label>
+        <input type="number" id="hours" name="hours" required min="1">
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        const form = document.getElementById('timesheetForm');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent form from reloading the page
+
+            // Get form data
+            const formData = new FormData(form);
+
+            // Convert form data to an object
+            const data = {};
+            formData.forEach((value, key) => (data[key] = value));
+
+            // Send data to Google Apps Script
+            fetch('YOUR_GOOGLE_SCRIPT_WEB_APP_URL', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Timesheet submitted successfully!");
+                form.reset(); // Clear the form
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert("Error submitting timesheet.");
+            });
+        });
+    </script>
+
+</body>
+</html>
