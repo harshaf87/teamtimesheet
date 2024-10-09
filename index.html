@@ -1,46 +1,104 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timesheet Form</title>
+    <title>Submit Working Hours</title>
     <style>
-        body {
+       body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-image: url('1.jpg'); /* Set the background image */
+            background-size: cover; /* Ensure the image covers the entire background */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Avoid repeating the background image */
             padding: 20px;
+            color: white; /* Set all text color to white */
         }
+
+        h2 {
+            text-align: center;
+        }
+
         form {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.3); /* Slightly transparent background for the form */
             padding: 20px;
             border-radius: 5px;
-            max-width: 400px;
-            margin: auto;
+            max-width: 500px; /* Reduced the max-width */
+            margin: 0 auto; /* Center the form horizontally */
         }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            text-align: center; /* Center-align the labels */
+        }
+
         input, select, button {
             margin: 10px 0;
             width: 100%;
-            padding: 8px;
+            padding: 10px;
+            font-size: 1em;
         }
+
         button {
             background-color: #28a745;
             color: white;
             border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center; /* Center-align table content */
+            border: 1px solid white;
+        }
+
+        th {
+            background-color: #444;
+        }
+
+        td {
+            background-color: rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
 
-    <h2>Timesheet Form</h2>
-    <form id="timesheetForm">
+    <h2>Timesheet</h2>
+    <form id="workingForm">
         <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
+        <select id="name" name="name" required>
+            <option value="harshal">Harshal</option>
+            <option value="shashank">Shashank</option>
+            <option value="dithya">Dithya</option>
+            <option value="kratik">Kratik</option>
+            <option value="shubadha">Shubadha</option>
+            <option value="rohan">Rohan</option>
+        </select>
 
         <label for="client">Client Name:</label>
-        <input type="text" id="client" name="client" required>
+        <select id="client" name="client" required>
+            <option value="CEMD">CEMD</option>
+            <option value="edsolution">edsolution</option>
+            <option value="crayon">crayon</option>
+            <option value="thecreditpros">The Credit Pros</option>
+            <option value="24HOL">24HOL</option>
+            <option value="Data Kitchen">Data Kitchen</option>
+        </select>
 
-        <label for="hours">Hours Worked:</label>
-        <input type="number" id="hours" name="hours" required min="1">
+        <label for="hours">Total Working Hours:</label>
+        <input type="number" id="hours" name="hours" required>
 
         <label for="date">Date:</label>
         <input type="date" id="date" name="date" required>
@@ -48,39 +106,64 @@
         <button type="submit">Submit</button>
     </form>
 
+    <div id="lastEntries">
+        <h3>Last 5 Entries for Selected Name</h3>
+        <table id="entriesTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Client</th>
+                    <th>Hours</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+
     <script>
-        const form = document.getElementById('timesheetForm');
+        document.getElementById('workingForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
 
-        form.addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent form from reloading the page
+            // Collect form data
+            const formData = new URLSearchParams(new FormData(event.target)).toString();
 
-            // Get form data
-            const formData = new FormData(form);
-
-            // Convert form data to an object
-            const data = {};
-            formData.forEach((value, key) => (data[key] = value));
-
-            // Send data to Google Apps Script
-            fetch('https://script.google.com/macros/s/AKfycbwCVPPeC8fUeEFe0UMjIL0bG0uBJxc6CU2rwzyBjGaqcTZVLpf807wIH5wgQTSXmKg/exec', {
+            // Send form data as URL-encoded to the Google Apps Script endpoint
+            fetch('https://script.google.com/macros/s/AKfycby-VVEQrYAeYOuHO4oS4PckFFzFUAbBqqWgn0VR9w-RLcVu5hTM7XGJygQpbgCoWRkZ/exec', { // Replace YOUR_SCRIPT_ID with your Apps Script ID
                 method: 'POST',
-                mode: 'cors',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: JSON.stringify(data)
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
-                alert("Timesheet submitted successfully!");
-                form.reset(); // Clear the form
+                alert("Form submitted successfully!");
+                document.getElementById('workingForm').reset(); // Reset the form
+
+                // Display last 5 rows for the selected name
+                const tbody = document.querySelector('#entriesTable tbody');
+                tbody.innerHTML = ''; // Clear existing rows
+
+                data.entries.forEach(entry => {
+                    const row = `<tr>
+                        <td>${entry.name}</td>
+                        <td>${entry.client}</td>
+                        <td>${entry.hours}</td>
+                        <td>${entry.date}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
             })
             .catch((error) => {
                 console.error('Error:', error);
-                alert("Error submitting timesheet.");
+                alert("Error submitting form. Please try again.");
             });
         });
     </script>
 
 </body>
 </html>
+
